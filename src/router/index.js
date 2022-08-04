@@ -8,6 +8,8 @@ import EventDetailView from '@/views/event/EventDetailView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import NetWorkErrorView from '@/views/NetworkErrorView.vue'
 import NProgress from 'nprogress'
+import EventService from '@/services/EventService.js'
+import GStore from '@/store'
 const routes = [{
         path: '/',
         name: 'EventList',
@@ -24,6 +26,25 @@ const routes = [{
         name: 'EventLayoutView',
         component: EventLayoutView,
         props: true,
+        beforeEnter: (to) => {
+            //<-- put API call here
+            return EventService.getEvent(to.params.id) //return and params.id
+                .then((response) => {
+                    //still need to set the data here
+                    GStore.event = response.data
+                })
+                .catch((error) => {
+                    if (error.response && error.response.status == 404) {
+                        return {
+                            //<---Return
+                            name: '404Resource',
+                            params: { resource: 'event' }
+                        }
+                    } else {
+                        return { name: 'NetworkError' }
+                    }
+                })
+        },
         children: [{
                 path: '',
                 name: 'EventDetails',
